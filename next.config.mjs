@@ -1,4 +1,9 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
-
-export default nextConfig;
+const nextConfig = {
+    output: 'export', // Enable static site export
+ //   basePath: '/elearningweb',
+  //  assetPrefix: '/elearningweb/',
+    trailingSlash: true,
+  };
+  
+  export default nextConfig;
