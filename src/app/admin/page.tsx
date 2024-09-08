@@ -14,6 +14,8 @@ import { ThemeProvider } from '@emotion/react';
 import { CssBaseline, Box, Card } from '@mui/material';
 import MyToolbarPlugin from '../MyPlugins/MyToolBar';
 import { Padding } from '@mui/icons-material';
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import ExampleTheme from '@/theme/ExampleTheme';
 
 
 
@@ -32,28 +34,31 @@ function onError(error:any) {
 export default function Editor() {
   const initialConfig = {
     namespace: 'MyEditor',
-    MyTheme,
-    onError,
+    theme: ExampleTheme,
+    onError(error: Error) {
+      throw error;
+    },
   };
 
   return (
     <ThemeProvider theme={MyTheme}>
       <CssBaseline/>
-      <Box sx={{p:4}}>
+       <Box sx={{p:4}}>
       
        
        
         <LexicalComposer initialConfig={initialConfig}>
         <MyToolbarPlugin/>
         
-        <Card variant='outlined' sx={{mt:2, pl:2}}>
+        <Card variant='outlined' sx={{mt:2, pl:2}} >
         
         <RichTextPlugin
-        contentEditable={<ContentEditable style={{outline:'none'}} />}
+        contentEditable={<ContentEditable style={{outline:'none'}} className="editor" />}
         //placeholder={<div>Enter some text...</div>}
+        
         ErrorBoundary={LexicalErrorBoundary}
       />
-
+<OnChangePlugin onChange={(editorState) => console.log(editorState)}/>
 
       <HistoryPlugin />
       <AutoFocusPlugin />
