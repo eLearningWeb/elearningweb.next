@@ -35,14 +35,14 @@ export default function MyToolbarPlugin() {
         console.log('Generated HTML:', htmlString); // For debugging
 
         // Convert the editor state to JSON
-        const json = JSON.stringify(editor.getEditorState().toJSON(), null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
+       // const json = JSON.stringify(editor.getEditorState().toJSON(), null, 2);
+        const blob = new Blob([htmlString], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
 
         // Create a link and trigger the download
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'data.json';
+        link.download = 'html.json';
         document.body.appendChild(link);
         link.click();
 

@@ -9,6 +9,7 @@ export default function FileUploader() {
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
+        
         setFileContent(reader.result);
       };
       reader.readAsText(file); // Read the file as text
