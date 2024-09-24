@@ -5,10 +5,30 @@ import { ArrowDropDown } from "@mui/icons-material";
 import { Button, CssBaseline, Menu, MenuItem, TextField } from "@mui/material";
 import { Grid, Box } from "@mui/material";
 import React, { useState } from "react";
+import ExampleTheme from "@/theme/ExampleTheme";
+import {LexicalComposer} from '@lexical/react/LexicalComposer';
+import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
+import {ContentEditable} from '@lexical/react/LexicalContentEditable';
+import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
+import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
+import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
+import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 const PaddingBottom='15px';
+const dropdownoptions = ['Exact match', 'Lines that start with'];
+
+
+let wordToSearch='';
+let currentIndex=0;
+let inputTextToSearch='';
 
 export default function TextSearch() {
+    const handleSearch=()=>{
+        console.log(`Index: ${currentIndex} Word: `+ wordToSearch);
+        console.log(`Input text: ${inputTextToSearch}`)
+        
+    };
     return (
         <ThemeProvider theme={MyTheme}>
             <CssBaseline />
@@ -16,14 +36,15 @@ export default function TextSearch() {
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={6} >
                         <OutlinedBox>
-                            <PopUpMenu />
-                            <TextField fullWidth label="Input" sx={{paddingBottom:PaddingBottom}}/>
-                            <Button variant="contained" sx={{paddingRight:8, paddingLeft:8}}>OK</Button>
+                            <PopUpMenu />   
+                            <InputField/>                       
+                            <Button onClick={handleSearch}
+                            variant="contained" sx={{paddingRight:8, paddingLeft:8}}>OK</Button>
                         </OutlinedBox>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <OutlinedBox>
-                            <div>Input Text</div>
+                            <Editor/>
                         </OutlinedBox>
                     </Grid>
                 </Grid>
@@ -49,7 +70,7 @@ function OutlinedBox({ children }: { children: React.ReactNode }) {
 }
 
 function PopUpMenu() {
-    const dropdownoptions = ['Exact match', 'Lines that start with'];
+    
     const [buttonDesc, setbuttonDesc] = useState(dropdownoptions[0]);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const open = Boolean(anchorEl);
@@ -64,6 +85,7 @@ function PopUpMenu() {
 
     const handleMenuItemClick = (index: number) => {
         setbuttonDesc(dropdownoptions[index]);
+        setCurrentIndex(index);
         handleClose();
     };
 
@@ -98,3 +120,62 @@ function PopUpMenu() {
         </div>
     );
 }
+
+function InputField(){
+    
+    return(<TextField 
+            fullWidth 
+            label="Input"
+            sx={{paddingBottom:PaddingBottom}}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                // This captures the input value and logs it to the console
+                
+                setWordToSearch(e.target.value);
+              }}/>);
+
+}
+
+//----
+
+function setWordToSearch(inputWord:string){    
+    wordToSearch=inputWord;
+    console.log(wordToSearch);
+}
+
+function setCurrentIndex(inputIndex:number){    
+    currentIndex=inputIndex;
+    console.log(currentIndex);
+}
+
+
+//---
+
+ function Editor() {
+    const initialConfig = {
+      namespace: 'MyEditor',
+      theme: ExampleTheme,
+      onError(error: Error) {
+        throw error;
+      },
+    };
+
+    return(<LexicalComposer initialConfig={initialConfig}>
+        <RichTextPlugin
+        contentEditable={<ContentEditable style={{outline:'none'}} className="editor" />}
+        //placeholder={<div>Enter some text...</div>}    
+        
+        ErrorBoundary={LexicalErrorBoundary}
+        />
+        <OnChangePlugin onChange={(editorState) => {console.log(editorState)
+           
+            editorState.read(() => {
+                 const text = editorState._nodeMap.get('root')?.getTextContent()||'';
+                 inputTextToSearch=text;
+                 //console.log(text);  // Logs the plain text
+               });
+        }}/>
+        <HistoryPlugin />
+        <AutoFocusPlugin />
+    </LexicalComposer>);
+}
+
