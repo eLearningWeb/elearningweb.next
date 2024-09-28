@@ -14,6 +14,9 @@ import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $getRoot } from "lexical";
+import { EditorState, TextNode } from "lexical";
+import { useEffect } from "react";
 
 const PaddingBottom='15px';
 const dropdownoptions = ['Exact match', 'Lines that start with'];
@@ -26,8 +29,17 @@ let inputTextToSearch='';
 export default function TextSearch() {
     const handleSearch=()=>{
         console.log(`Index: ${currentIndex} Word: `+ wordToSearch);
-        console.log(`Input text: ${inputTextToSearch}`)
-        
+        console.log(`Input text: ${inputTextToSearch}`);       
+        const regex=new RegExp(/chem/,'gi');
+        const matches = [...inputTextToSearch.matchAll(regex)];
+        if(matches.length>0){
+            console.log(matches[0].index);
+        }
+        //scrolling to element
+        const element = document.querySelector(`[data-text-index="${matches[0].index}"]`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     };
     return (
         <ThemeProvider theme={MyTheme}>
@@ -149,6 +161,16 @@ function setCurrentIndex(inputIndex:number){
 
 
 //---
+let LexicalEditorState:EditorState|null=null;
+function WrapText(){
+   
+    const root=LexicalEditorState ? $getRoot() : null;
+    root?.getChildren().forEach((node)=>{
+        console.log("nodes"+
+            node.getTextContent());
+    })    
+    return null;
+}
 
  function Editor() {
     const initialConfig = {
@@ -161,13 +183,13 @@ function setCurrentIndex(inputIndex:number){
 
     return(<LexicalComposer initialConfig={initialConfig}>
         <RichTextPlugin
-        contentEditable={<ContentEditable style={{outline:'none'}} className="editor" />}
+        contentEditable={<ContentEditable style={{outline:'none', maxHeight:'300px', overflow:'scroll'}} className="editor" />}
         //placeholder={<div>Enter some text...</div>}    
         
         ErrorBoundary={LexicalErrorBoundary}
         />
         <OnChangePlugin onChange={(editorState) => {console.log(editorState)
-           
+           LexicalEditorState=editorState;
             editorState.read(() => {
                  const text = editorState._nodeMap.get('root')?.getTextContent()||'';
                  inputTextToSearch=text;
@@ -175,7 +197,15 @@ function setCurrentIndex(inputIndex:number){
                });
         }}/>
         <HistoryPlugin />
+       
+        
         <AutoFocusPlugin />
     </LexicalComposer>);
 }
 
+function SearchPlugin({ index, length }: { index: number, length:number }) {
+   const [editor] = useLexicalComposerContext();
+  
+    
+    return null;
+  }
