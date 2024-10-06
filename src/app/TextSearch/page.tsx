@@ -2,7 +2,7 @@
 import MyTheme from "@/theme/theme";
 import { ThemeProvider } from "@emotion/react";
 import { ArrowDropDown } from "@mui/icons-material";
-import { Button, CssBaseline, Menu, MenuItem, TextField } from "@mui/material";
+import { Button, CssBaseline, Menu, MenuItem, TableContainer, TextField, Table, TableHead, TableBody } from "@mui/material";
 import { Grid, Box } from "@mui/material";
 import React, { useState } from "react";
 import ExampleTheme from "@/theme/ExampleTheme";
@@ -14,32 +14,32 @@ import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $getRoot } from "lexical";
-import { EditorState, TextNode } from "lexical";
-import { useEffect } from "react";
+import { dropdownoptions } from "../utilities/Constants";
+import { RegexSearch } from "../utilities/Regex";
+
 
 const PaddingBottom='15px';
-const dropdownoptions = ['Exact match', 'Lines that start with'];
+
 
 
 let wordToSearch='';
 let currentIndex=0;
-let inputTextToSearch='';
+let inputText='';
 
 export default function TextSearch() {
     const handleSearch=()=>{
         console.log(`Index: ${currentIndex} Word: `+ wordToSearch);
-        console.log(`Input text: ${inputTextToSearch}`);       
-        const regex=new RegExp(/chem/,'gi');
-        const matches = [...inputTextToSearch.matchAll(regex)];
-        if(matches.length>0){
-            console.log(matches[0].index);
-        }
+        console.log(`Input text: ${inputText}`);  
+        console.log(currentIndex);
+        RegexSearch(wordToSearch,inputText,currentIndex).forEach((match, index)=>{
+            console.log(`${index}: ${match}`);
+        })
+        
         //scrolling to element
-        const element = document.querySelector(`[data-text-index="${matches[0].index}"]`);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        // const element = document.querySelector(`[data-text-index="${matches[0].index}"]`);
+        // if (element) {
+        //   element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // }
     };
     return (
         <ThemeProvider theme={MyTheme}>
@@ -56,6 +56,7 @@ export default function TextSearch() {
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <OutlinedBox>
+                            
                             <Editor/>
                         </OutlinedBox>
                     </Grid>
@@ -67,16 +68,15 @@ export default function TextSearch() {
 
 function OutlinedBox({ children }: { children: React.ReactNode }) {
     const commonStyles = {
-        bgcolor: 'background.paper',
-        borderColor: 'text.primary',
         m: 1,
         border: 1,
         width: '100%',
+        overflowY:'scroll'
     };
 
     return (
         <Box sx={{ flexGrow: 1 }}>
-            <Box sx={{ ...commonStyles, borderRadius: '10px', padding: 3 }} >{children}</Box>
+            <Box sx={{ ...commonStyles, borderRadius: '10px', padding: 2 }} >{children}</Box>
         </Box>
     );
 }
@@ -141,7 +141,6 @@ function InputField(){
             sx={{paddingBottom:PaddingBottom}}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 // This captures the input value and logs it to the console
-                
                 setWordToSearch(e.target.value);
               }}/>);
 
@@ -159,18 +158,8 @@ function setCurrentIndex(inputIndex:number){
     console.log(currentIndex);
 }
 
+//
 
-//---
-let LexicalEditorState:EditorState|null=null;
-function WrapText(){
-   
-    const root=LexicalEditorState ? $getRoot() : null;
-    root?.getChildren().forEach((node)=>{
-        console.log("nodes"+
-            node.getTextContent());
-    })    
-    return null;
-}
 
  function Editor() {
     const initialConfig = {
@@ -183,16 +172,19 @@ function WrapText(){
 
     return(<LexicalComposer initialConfig={initialConfig}>
         <RichTextPlugin
-        contentEditable={<ContentEditable style={{outline:'none', maxHeight:'300px', overflow:'scroll'}} className="editor" />}
+        contentEditable={<ContentEditable style={{ outline: 'none',
+            height: '300px',
+            overflowY: 'auto', // Only vertical scrolling if needed
+            
+            }}/>}
         //placeholder={<div>Enter some text...</div>}    
         
         ErrorBoundary={LexicalErrorBoundary}
         />
-        <OnChangePlugin onChange={(editorState) => {console.log(editorState)
-           LexicalEditorState=editorState;
+        <OnChangePlugin onChange={(editorState) => {console.log(editorState)           
             editorState.read(() => {
                  const text = editorState._nodeMap.get('root')?.getTextContent()||'';
-                 inputTextToSearch=text;
+                 inputText=text;
                  //console.log(text);  // Logs the plain text
                });
         }}/>
@@ -205,7 +197,19 @@ function WrapText(){
 
 function SearchPlugin({ index, length }: { index: number, length:number }) {
    const [editor] = useLexicalComposerContext();
-  
-    
     return null;
+  }
+
+  //using material ui Table https://mui.com/material-ui/react-table/
+  function MyTable(){
+    <TableContainer sx={{maxHeight:440}}>
+        <Table stickyHeader>
+            <TableHead>
+
+            </TableHead>
+            <TableBody>
+
+            </TableBody>
+        </Table>
+    </TableContainer>
   }
